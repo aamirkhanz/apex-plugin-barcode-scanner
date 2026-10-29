@@ -1,0 +1,164 @@
+/* Barcode Scanner item plug-in (TechRevX, www.techrevx.com) */
+
+/* the field and its Scan button, joined; the theme orders inputs as 3 (after pre-text), so the button is 4 */
+.tx-Scan-input,
+.t-Form-itemWrapper > input.tx-Scan-input { flex: 1 1 auto; order: 3; min-width: 0; border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important; }
+.tx-Scan-btn,
+.t-Form-itemWrapper > .tx-Scan-btn {
+  display: inline-flex;
+  flex: none;
+  order: 4;
+  align-items: center;
+  gap: 7px;
+  margin-left: -1px;
+  padding: 0 14px;
+  border: 1px solid var(--a-field-input-border-color, rgba(0, 0, 0, .18));
+  border-radius: 0 var(--a-field-input-border-radius, 6px) var(--a-field-input-border-radius, 6px) 0;
+  background: var(--ut-palette-primary, #3442a8);
+  color: var(--ut-palette-primary-contrast, #fff);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tx-Scan-btn:hover:not(:disabled) { filter: brightness(1.08); }
+.tx-Scan-btn:focus-visible { outline: 2px solid var(--ut-palette-primary, #3442a8); outline-offset: 2px; }
+.tx-Scan-btn:disabled { opacity: .5; cursor: not-allowed; }
+.tx-Scan-btn .fa.fa { font-size: 16px; }
+
+/* the scanner dialog */
+html.tx-ScanDlg-lock { overflow: hidden; }
+.tx-ScanDlg { position: fixed; inset: 0; z-index: 1100; display: grid; place-items: center; }
+.tx-ScanDlg[hidden] { display: none; }
+.tx-ScanDlg-backdrop { position: absolute; inset: 0; background: rgba(10, 12, 20, .62); opacity: 0; transition: opacity .15s; }
+.tx-ScanDlg-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(560px, calc(100vw - 24px));
+  max-height: calc(100vh - 24px);
+  overflow: auto;
+  border-radius: 16px;
+  background: #15171f;
+  color: #f2f3f7;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, .45);
+  opacity: 0;
+  transform: scale(.98);
+  transition: opacity .15s, transform .15s;
+}
+.tx-ScanDlg.is-open .tx-ScanDlg-backdrop,
+.tx-ScanDlg.is-open .tx-ScanDlg-panel { opacity: 1; transform: none; }
+.tx-ScanDlg-head { display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 18px; }
+.tx-ScanDlg .tx-ScanDlg-title { flex: 1; margin: 0; color: inherit; font-size: 16px; font-weight: 600; line-height: 1.3; }
+.tx-ScanDlg-close {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .1);
+  color: inherit;
+  cursor: pointer;
+}
+.tx-ScanDlg-close:hover { background: rgba(255, 255, 255, .18); }
+
+.tx-ScanDlg-stage { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: #000; }
+.tx-ScanDlg-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.tx-ScanDlg-stage.is-mirrored .tx-ScanDlg-video { transform: scaleX(-1); }
+.tx-ScanDlg-hit { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+/* viewfinder: the outside is dimmed, the corners are marked */
+.tx-ScanDlg-frame {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+  border-radius: 14px;
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .38);
+  pointer-events: none;
+  --c: rgba(255, 255, 255, .95);
+  background:
+    linear-gradient(var(--c), var(--c)) top left / 28px 4px no-repeat,
+    linear-gradient(var(--c), var(--c)) top left / 4px 28px no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / 28px 4px no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / 4px 28px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / 28px 4px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / 4px 28px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / 28px 4px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / 4px 28px no-repeat;
+}
+.tx-ScanDlg-frame.is-square { width: min(62%, 300px); aspect-ratio: 1; }
+.tx-ScanDlg-frame.is-wide { width: 80%; aspect-ratio: 2.4; }
+.tx-ScanDlg-frame::after {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 50%;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(47, 211, 107, .85);
+  box-shadow: 0 0 12px rgba(47, 211, 107, .8);
+  animation: tx-scan-line 2.2s ease-in-out infinite alternate;
+}
+@keyframes tx-scan-line { from { top: 12%; } to { top: 88%; } }
+
+.tx-ScanDlg-msg {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  max-width: calc(100% - 28px);
+  margin: 0;
+  padding: 7px 14px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: rgba(10, 12, 20, .72);
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+}
+.tx-ScanDlg-msg[hidden] { display: none; }
+.tx-ScanDlg-msg.is-error { border-radius: 10px; background: #8f1d2c; }
+
+.tx-ScanDlg-list { margin: 0; padding: 8px 14px 0; list-style: none; }
+.tx-ScanDlg-list[hidden] { display: none; }
+.tx-ScanDlg-list li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 4px; border-bottom: 1px solid rgba(255, 255, 255, .1); font-size: 13px; }
+.tx-ScanDlg-list strong { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-weight: 600; overflow-wrap: anywhere; }
+.tx-ScanDlg-list span { color: #a9adbd; white-space: nowrap; }
+
+.tx-ScanDlg-tools { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 14px; }
+.tx-ScanDlg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .06);
+  color: #f2f3f7;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tx-ScanDlg-btn[hidden] { display: none; }
+.tx-ScanDlg-btn:hover { background: rgba(255, 255, 255, .14); }
+.tx-ScanDlg-btn[aria-pressed="true"] { background: #f2c94c; border-color: #f2c94c; color: #15171f; }
+.tx-ScanDlg-btn:focus-visible,
+.tx-ScanDlg-close:focus-visible { outline: 2px solid #8fb4ff; outline-offset: 2px; }
+.tx-ScanDlg .tx-ScanDlg-btn .fa,
+.tx-ScanDlg .tx-ScanDlg-close .fa { font-size: 15px; }
+.tx-ScanDlg-file { display: none; }
+
+@media (max-width: 640px) {
+  .tx-ScanDlg-panel { width: 100vw; height: 100%; max-height: none; border-radius: 0; }
+  .tx-ScanDlg-stage { flex: 1; aspect-ratio: auto; min-height: 50vh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tx-ScanDlg-frame::after { animation: none; }
+  .tx-ScanDlg-backdrop, .tx-ScanDlg-panel { transition: none; }
+}
