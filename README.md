@@ -4,11 +4,14 @@ A text field with a Scan button that reads QR codes and barcodes with the device
 
 ![Barcode Scanner](screenshots/preview.png)
 
+**[Live demo](https://oracleapex.com/ords/r/aamirkhanz/plugins/barcode-scanner)**: sign in as `demo` with the password `Demo`.
+
 | | |
 |---|---|
 | **Type** | Item plug-in |
 | **Internal name** | `COM.TECHREVX.BARCODE_SCANNER` |
 | **Version** | 1.0 |
+| **Live demo** | [oracleapex.com/ords/r/aamirkhanz/plugins/barcode-scanner](https://oracleapex.com/ords/r/aamirkhanz/plugins/barcode-scanner) (user `demo`, password `Demo`) |
 | **Requires** | Oracle APEX 26.2 or later |
 | **License** | MIT |
 
